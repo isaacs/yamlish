@@ -12,7 +12,7 @@ Usage:
       object:
         - full
         - of
-      pretty: things
+    pretty: things
     */
     yamlish.encode({some:{object:["full", "of"]}, pretty:"things"})
 
