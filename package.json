@@ -3,4 +3,4 @@
 , "repository":"https://github.com/isaacs/yamlish"
 , "version" : "0.0.1"
 , "keywords" : [ "yaml", "yamlish", "test", "anything", "protocol", "tap"]
-, "author" : "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)"
+, "author" : "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)" }
