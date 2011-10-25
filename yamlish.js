@@ -36,10 +36,14 @@ function encode (obj, indent) {
       }
       seen.push(obj)
 
+      if (typeof Buffer === "function" &&
+          typeof Buffer.isBuffer === "function" &&
+          Buffer.isBuffer(obj)) return obj.inspect()
+
       if (obj instanceof Error) {
         var o = { name: obj.name
-              , message: obj.message
-              , type: obj.type }
+                , message: obj.message
+                , type: obj.type }
 
         if (obj.code) o.code = obj.code
         if (obj.errno) o.errno = obj.errno
