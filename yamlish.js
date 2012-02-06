@@ -6,6 +6,16 @@ function encode (obj, indent) {
   var deep = arguments[2]
   if (!indent) indent = "  "
 
+  if (obj instanceof String ||
+      Object.prototype.toString.call(obj) === "[object String]") {
+    obj = obj.toString()
+  }
+
+  if (obj instanceof Number ||
+      Object.prototype.toString.call(obj) === "[object Number]") {
+    obj = obj.valueOf()
+  }
+
   // take out the easy ones.
   switch (typeof obj) {
     case "string":
@@ -29,7 +39,18 @@ function encode (obj, indent) {
       // at this point we know it types as an object
       if (!obj) return "~"
 
-      if (obj instanceof Date) return obj.toISOString()
+      if (obj instanceof Date ||
+          Object.prototype.toString.call(obj) === "[object Date]") {
+        return "[Date " + obj.toISOString() + "]"
+      }
+
+      if (obj instanceof RegExp ||
+          Object.prototype.toString.call(obj) === "[object RegExp]" ||
+          obj instanceof Boolean ||
+          Object.prototype.toString.call(obj) === "[object Boolean]"
+         ) {
+        return obj.toString()
+      }
 
       if (seen.indexOf(obj) !== -1) {
         return "[Circular]"
