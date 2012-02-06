@@ -22,7 +22,11 @@ function encode (obj, indent) {
       obj = obj.trim()
       if (obj.indexOf("\n") !== -1) {
         return "|\n" + indent + obj.split(/\r?\n/).join("\n"+indent)
-      } else return obj
+      } else if (obj.indexOf(":") !== -1) {
+        return JSON.stringify(obj)
+      } else {
+        return obj
+      }
 
     case "number":
       return obj.toString(10)
