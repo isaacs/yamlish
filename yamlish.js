@@ -22,10 +22,8 @@ function encode (obj, indent) {
       obj = obj.trim()
       if (obj.indexOf("\n") !== -1) {
         return "|\n" + indent + obj.split(/\r?\n/).join("\n"+indent)
-      } else if (obj.indexOf(":") !== -1) {
-        return JSON.stringify(obj)
       } else {
-        return obj
+        return "'" + obj + "'"
       }
 
     case "number":
@@ -45,7 +43,7 @@ function encode (obj, indent) {
 
       if (obj instanceof Date ||
           Object.prototype.toString.call(obj) === "[object Date]") {
-        return "[Date " + obj.toISOString() + "]"
+        return encode("[Date " + obj.toISOString() + "]", indent)
       }
 
       if (obj instanceof RegExp ||
@@ -53,7 +51,7 @@ function encode (obj, indent) {
           obj instanceof Boolean ||
           Object.prototype.toString.call(obj) === "[object Boolean]"
          ) {
-        return obj.toString()
+        return encode(obj.toString(), indent)
       }
 
       if (seen.indexOf(obj) !== -1) {
@@ -63,7 +61,7 @@ function encode (obj, indent) {
 
       if (typeof Buffer === "function" &&
           typeof Buffer.isBuffer === "function" &&
-          Buffer.isBuffer(obj)) return obj.inspect()
+          Buffer.isBuffer(obj)) return encode(obj.inspect(), indent)
 
       if (obj instanceof Error) {
         var o = { name: obj.name
