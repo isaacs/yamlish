@@ -1,0 +1,9 @@
+{
+    "launchers": {
+        "Test": {
+            "command": "node *_tests.js",
+            "protocol": "tap"
+        }
+    },
+    "launch_in_dev": ["Test"]
+}
