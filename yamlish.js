@@ -56,6 +56,10 @@ function encode (obj, indent) {
         return obj.toString()
       }
 
+      if (Array.isArray(obj) && obj.length === 0){
+        return '[]'
+      }
+
       if (seen.indexOf(obj) !== -1) {
         return "[Circular]"
       }
@@ -79,15 +83,20 @@ function encode (obj, indent) {
       var out = ""
 
       if (Array.isArray(obj)) {
-        var out = "\n" + indent + "- " +obj.map(function (item) {
+        out = "\n" + indent + "- " +obj.map(function (item) {
           return encode(item, indent + "  ", true)
-        }).join("\n"+indent + "- ")
+        }).join("\n"+indent + "- ")  
         break
       }
 
       // an actual object
       var keys = Object.keys(obj)
-        , niceKeys = keys.map(function (k) {
+      
+      if (keys.length === 0){ // Empty object
+        return '{}'
+      }
+
+      var niceKeys = keys.map(function (k) {
             return (k.match(/^[a-zA-Z0-9_]+$/) ? k : JSON.stringify(k)) + ": "
           })
       //console.error(keys, niceKeys, obj)
