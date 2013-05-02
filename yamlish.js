@@ -18,95 +18,95 @@ function encode (obj, indent) {
 
   // take out the easy ones.
   switch (typeof obj) {
-    case "string":
-      obj = obj.trim()
-      if (obj.indexOf("\n") !== -1) {
-        return "|\n" + indent + obj.split(/\r?\n/).join("\n"+indent)
-      } else {
-        return (obj)
-      }
+  case "string":
+    obj = obj.trim()
+    if (obj.indexOf("\n") !== -1) {
+      return "|\n" + indent + obj.split(/\r?\n/).join("\n"+indent)
+    }
+    return (obj)
 
-    case "number":
-      return obj.toString(10)
+  case "number":
+    return obj.toString(10)
 
-    case "function":
-      return encode(obj.toString(), indent, true)
+  case "function":
+    return encode(obj.toString(), indent, true)
 
-    case "boolean":
+  case "boolean":
+    return obj.toString()
+
+  case "undefined":
+    // fallthrough
+  case "object":
+    // at this point we know it types as an object
+    if (!obj) return "~"
+
+    if (obj instanceof Date ||
+        Object.prototype.toString.call(obj) === "[object Date]") {
+      return JSON.stringify("[Date " + obj.toISOString() + "]")
+    }
+
+    if (obj instanceof RegExp ||
+        Object.prototype.toString.call(obj) === "[object RegExp]") {
+      return JSON.stringify(obj.toString())
+    }
+
+    if (obj instanceof Boolean ||
+        Object.prototype.toString.call(obj) === "[object Boolean]") {
       return obj.toString()
+    }
 
-    case "undefined":
-      // fallthrough
-    case "object":
-      // at this point we know it types as an object
-      if (!obj) return "~"
+    if (seen.indexOf(obj) !== -1) {
+      return "[Circular]"
+    }
+    seen.push(obj)
 
-      if (obj instanceof Date ||
-          Object.prototype.toString.call(obj) === "[object Date]") {
-        return JSON.stringify("[Date " + obj.toISOString() + "]")
-      }
+    if (typeof Buffer === "function" &&
+        typeof Buffer.isBuffer === "function" &&
+        Buffer.isBuffer(obj)) return obj.inspect()
 
-      if (obj instanceof RegExp ||
-          Object.prototype.toString.call(obj) === "[object RegExp]") {
-        return JSON.stringify(obj.toString())
-      }
-
-      if (obj instanceof Boolean ||
-          Object.prototype.toString.call(obj) === "[object Boolean]") {
-        return obj.toString()
-      }
-
-      if (seen.indexOf(obj) !== -1) {
-        return "[Circular]"
-      }
-      seen.push(obj)
-
-      if (typeof Buffer === "function" &&
-          typeof Buffer.isBuffer === "function" &&
-          Buffer.isBuffer(obj)) return obj.inspect()
-
-      if (obj instanceof Error) {
-        var o = { name: obj.name
+    if (obj instanceof Error) {
+      var o = { name: obj.name
                 , message: obj.message
                 , type: obj.type }
 
-        if (obj.code) o.code = obj.code
-        if (obj.errno) o.errno = obj.errno
-        if (obj.type) o.type = obj.type
-        obj = o
-      }
+      if (obj.code) o.code = obj.code
+      if (obj.errno) o.errno = obj.errno
+      if (obj.type) o.type = obj.type
+      obj = o
+    }
 
-      var out = ""
+    var out = ""
 
-      if (Array.isArray(obj)) {
-        var out = "\n" + indent + "- " +obj.map(function (item) {
-          return encode(item, indent + "  ", true)
-        }).join("\n"+indent + "- ")
-        break
-      }
-
-      // an actual object
-      var keys = Object.keys(obj)
-        , niceKeys = keys.map(function (k) {
-            return (k.match(/^[a-zA-Z0-9_]+$/) ? k : JSON.stringify(k)) + ": "
-          })
-      //console.error(keys, niceKeys, obj)
-      var maxLength = Math.max.apply(Math, niceKeys.map(function (k) {
-            return k.length
-          }).concat(0))
-      //console.error(niceKeys, maxLength)
-
-      var spaces = new Array(maxLength + 1).join(" ")
-
-      if (!deep) indent += "  "
-      out = "\n" + indent + keys.map(function (k, i) {
-        var niceKey = niceKeys[i]
-        return niceKey + spaces.substr(niceKey.length)
-                       + encode(obj[k], indent + "  ", true)
-      }).join("\n" + indent)
+    if (Array.isArray(obj)) {
+      out = "\n" + indent + "- " +obj.map(function (item) {
+        return encode(item, indent + "  ", true)
+      }).join("\n"+indent + "- ")
       break
+    }
 
-    default: return ""
+    // an actual object
+    var keys = Object.keys(obj)
+    , niceKeys = keys.map(function (k) {
+      return (k.match(/^[a-zA-Z0-9_]+$/) ? k : JSON.stringify(k)) + ": "
+    })
+    //console.error(keys, niceKeys, obj)
+    var maxLength = Math.max.apply(Math, niceKeys.map(function (k) {
+      return k.length
+    }).concat(0))
+    //console.error(niceKeys, maxLength)
+
+    var spaces = new Array(maxLength + 1).join(" ")
+
+    if (!deep) indent += "  "
+    out = "\n" + indent + keys.map(function (k, i) {
+      var niceKey = niceKeys[i]
+      return niceKey + spaces.substr(niceKey.length)
+        + encode(obj[k], indent + "  ", true)
+    }).join("\n" + indent)
+    break
+
+  default:
+    return ""
   }
   if (!deep) seen.length = 0
   return out
@@ -114,15 +114,17 @@ function encode (obj, indent) {
 
 function decode (str) {
   var v = str.trim()
-    , d
-    , dateRe = /^\[Date ([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(?::[0-9]{2})?(?:\.[0-9]{3})?(?:[A-Z]+)?)\]$/
+  , d
+  , dateRe = /^\[Date ([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(?::[0-9]{2})?(?:\.[0-9]{3})?(?:[A-Z]+)?)\]$/
 
   if (v === "~") return null
 
+  var jp
+
   try {
-    var jp = JSON.parse(str)
+    jp = JSON.parse(str)
   } catch (e) {
-    var jp = ""
+    jp = ""
   }
 
   if (jp &&
@@ -145,24 +147,24 @@ function decode (str) {
   var first = lines.shift().trim()
   if (lines.length) lines = undent(lines)
   switch (first) {
-    case "|":
-      return lines.join("\n")
-    case ">":
-      return lines.join("\n").split(/\n{2,}/).map(function (l) {
-        return l.split(/\n/).join(" ")
-      }).join("\n")
-    default:
-      if (!lines.length) return first
-      // array or object.
-      // the first line will be either "- value" or "key: value"
-      return lines[0].charAt(0) === "-" ? decodeArr(lines) : decodeObj(lines)
+  case "|":
+    return lines.join("\n")
+  case ">":
+    return lines.join("\n").split(/\n{2,}/).map(function (l) {
+      return l.split(/\n/).join(" ")
+    }).join("\n")
+  default:
+    if (!lines.length) return first
+    // array or object.
+    // the first line will be either "- value" or "key: value"
+    return lines[0].charAt(0) === "-" ? decodeArr(lines) : decodeObj(lines)
   }
 }
 
 function decodeArr (lines) {
   var out = []
-    , key = 0
-    , val = []
+  , key = 0
+  , val = []
   for (var i = 0, l = lines.length; i < l; i ++) {
     // if it starts with a -, then it's a new thing
     var line = lines[i]
@@ -184,8 +186,8 @@ function decodeArr (lines) {
 
 function decodeObj (lines) {
   var out = {}
-    , val = []
-    , key = null
+  , val = []
+  , key = null
 
   for (var i = 0, l = lines.length; i < l; i ++) {
     var line = lines[i]
@@ -234,27 +236,27 @@ function undent (lines) {
 
 // XXX Turn this into proper tests.
 if (require.main === module) {
-var obj = [{"bigstring":new Error().stack}
-          ,{ar:[{list:"of"},{some:"objects"}]}
-          ,{date:new Date()}
-          ,{"super huge string":new Error().stack}
-          ]
+  var obj = [{"bigstring":new Error().stack}
+             ,{ar:[{list:"of"},{some:"objects"}]}
+             ,{date:new Date()}
+             ,{"super huge string":new Error().stack}
+            ]
 
-Date.prototype.toJSON = function (k, val) {
-  console.error(k, val, this)
-  return this.toISOString() + " (it's a date)"
-}
+  Date.prototype.toJSON = function (k, val) {
+    console.error(k, val, this)
+    return this.toISOString() + " (it's a date)"
+  }
 
-var enc = encode(obj)
+  var enc = encode(obj)
   , dec = decode(enc)
   , encDec = encode(dec)
 
-console.error(JSON.stringify({ obj : obj
-                             , enc : enc.split(/\n/)
-                             , dec : dec }, null, 2), encDec === enc)
+  console.error(JSON.stringify({ obj : obj
+                                 , enc : enc.split(/\n/)
+                                 , dec : dec }, null, 2), encDec === enc)
 
-var num = 100
+  var num = 100
   , encNum = encode(num)
   , decEncNum = decode(encNum)
-console.error([num, encNum, decEncNum])
+  console.error([num, encNum, decEncNum])
 }
