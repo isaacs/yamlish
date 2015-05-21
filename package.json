@@ -2,7 +2,7 @@
   "name": "yamlish",
   "description": "Parser/encoder for the yamlish format",
   "repository": "https://github.com/isaacs/yamlish",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "yamlish.js",
   "keywords": [
     "yaml",
