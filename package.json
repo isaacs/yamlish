@@ -12,9 +12,6 @@
     "protocol",
     "tap"
   ],
-  "license": {
-    "type": "MIT",
-    "url": "http://github.com/isaacs/yamlish/raw/master/LICENSE"
-  },
+  "license": "ISC",
   "author": "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)"
 }
